@@ -2,6 +2,8 @@ package me.zeldafan42.TSP;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Scanner;
 
 public class TSP
@@ -107,6 +109,15 @@ public class TSP
 			}
 		}
 		
+		for(double[] arr : adjMtx)
+		{
+			NumberFormat nf = new DecimalFormat("00.00");
+			for(double d : arr)
+			{
+				System.out.print(nf.format(d) + " ");
+			}
+			System.out.print(System.lineSeparator());
+		}
 		
 		
 		if(args[0].equals("-e"))
@@ -122,6 +133,16 @@ public class TSP
 			for(int i=0; i<count; i++)
 			{
 				solution[i] = neighbourSearch(adjMtx, count, i);
+			}
+			
+			for(int[] arr : solution)
+			{
+				for(int i : arr)
+				{
+					System.out.println(i);
+				}
+				
+				System.out.println("-------");
 			}
 			
 			
@@ -174,6 +195,7 @@ public class TSP
 	{
 		int[] res = new int[count];
 		int curElement = startIndex;
+		int tmpElement = 0;
 		int nextElement = 0;
 		double minCost = 0;
 		int i = 0;
@@ -198,20 +220,19 @@ public class TSP
 					if(minCost<0)
 					{
 						minCost = adjMtx[curElement][nextElement];
-						curElement = nextElement;
+						tmpElement = nextElement;
 						continue;
 					}
 					
 					if(minCost > adjMtx[curElement][nextElement])
 					{
 						minCost = adjMtx[curElement][nextElement];
-						curElement = nextElement;
+						tmpElement = nextElement;
 					}
 				}
 			}
+			curElement = tmpElement;
 		}
-		
 		return res;
 	}
-
 }
