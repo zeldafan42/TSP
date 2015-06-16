@@ -1,6 +1,8 @@
 package me.zeldafan42.TSP;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -111,27 +113,23 @@ public class TSP
 			}
 		}
 		
-		for(double[] arr : adjMtx)
-		{
-			NumberFormat nf = new DecimalFormat("00.00");
-			for(double d : arr)
-			{
-				System.out.print(nf.format(d) + " ");
-			}
-			System.out.print(System.lineSeparator());
-		}
+//		for(double[] arr : adjMtx)
+//		{
+//			NumberFormat nf = new DecimalFormat("00.00");
+//			for(double d : arr)
+//			{
+//				System.out.print(nf.format(d) + " ");
+//			}
+//			System.out.print(System.lineSeparator());
+//		}
 		
-		
+		ThreadMXBean thx = ManagementFactory.getThreadMXBean();
+		long start = thx.getCurrentThreadCpuTime();
 		if(args[0].equals("-e"))
 		{
 			int[] sequence = new int[count];
 			int temp[] = new int[count];
-			boolean b[] = new boolean[count];
-			for(boolean bo :b )
-			{
-				bo = false;
-			}
-			enumerate(adjMtx, count, temp, sequence, b,0,0,0);
+			enumerate(adjMtx, count, temp, sequence, new boolean[count],0,0,0);
 			for(int i : sequence)
 			{
 				System.out.println("<" + coords[i][0] + "," + coords[i][1] + ">");
@@ -166,6 +164,8 @@ public class TSP
 			System.err.println("Algorithm not supported");
 			return;
 		}
+		double end = (thx.getCurrentThreadCpuTime() -start)/1E9;
+		System.out.println("Algorithm execution time: " + end + " seconds");
 		
 	}
 
@@ -195,10 +195,16 @@ public class TSP
 				step--;
 				sum -= adjMtx[start][i];
 			}
-			
 		}
 		if(step == count-1)
 		{
+			sum += adjMtx[start][0];
+			//System.out.println(sum);
+//			for(int i : curtour)
+//			{
+//				System.out.print(i);
+//			}
+//			System.out.println();
 			if(minLength == 0 || sum < minLength)
 			{
 				minLength = sum;
@@ -220,10 +226,10 @@ public class TSP
 		
 		for(i=0; i<route.length-1; i++)
 		{
-			sum += adjMtx[route[i]][route[i+1]];
+			sum += Math.sqrt(adjMtx[route[i]][route[i+1]]);
 		}
 
-		sum += adjMtx[route[route.length-1]][route[0]];
+		sum += Math.sqrt(adjMtx[route[route.length-1]][route[0]]);
 		
 		
 		
