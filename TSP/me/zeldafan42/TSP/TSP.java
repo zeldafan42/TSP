@@ -5,9 +5,11 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class TSP
 {
+	double minLength = 0;
 
 	public static void main(String[] args)
 	{
@@ -122,8 +124,20 @@ public class TSP
 		
 		if(args[0].equals("-e"))
 		{
-			int[] sequence;
-			sequence = enumerate(adjMtx, count);
+			int[] sequence = new int[count];
+			int temp[] = new int[count];
+			boolean b[] = new boolean[count];
+			for(boolean bo :b )
+			{
+				bo = false;
+			}
+			enumerate(adjMtx, count, temp, sequence, b,0,0,0);
+			for(int i : sequence)
+			{
+				System.out.println("<" + coords[i][0] + "," + coords[i][1] + ">");
+			}
+			System.out.println("Length: " + calcLength(sequence,adjMtx));
+			System.out.println("-------");
 		}
 		else if(args[0].equals("-n"))
 		{
@@ -139,9 +153,9 @@ public class TSP
 			{
 				for(int i : arr)
 				{
-					System.out.println(i);
+					System.out.println("<" + coords[i][0] + "," + coords[i][1] + ">");
 				}
-				
+				System.out.println("Length: " + calcLength(arr,adjMtx));
 				System.out.println("-------");
 			}
 			
@@ -164,14 +178,39 @@ public class TSP
 		return (x*x+y*y);
 	}
 	
-	int[] enumerate(double adjMtx[][],int count)
+	void enumerate(double adjMtx[][],int count,int curtour[], int mintour[], boolean visited[], double sum,int start, int step)
 	{
-		int[] res = new int[count];
+		curtour[step] = start;
 		
+		for(int i = 1;i<count;i++)
+		{
+			if(!visited[i])
+			{
+				visited[i] = true;
+				sum += adjMtx[start][i];
+				step++;
+				//System.out.println(i);
+				enumerate(adjMtx,count,curtour,mintour,visited,sum,i,step);
+				visited[i] = false;
+				step--;
+				sum -= adjMtx[start][i];
+			}
+			
+		}
+		if(step == count-1)
+		{
+			if(minLength == 0 || sum < minLength)
+			{
+				minLength = sum;
+				System.arraycopy(curtour,0,mintour,0,count);
+//				for(int i : curtour)
+//				{
+//					System.out.print(i);
+//				}
+//				System.out.println();
+			}
+		}
 		
-		
-		
-		return res;
 	}
 	
 	double calcLength(int[] route, double[][] adjMtx)
