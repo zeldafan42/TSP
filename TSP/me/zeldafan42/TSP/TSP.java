@@ -97,12 +97,12 @@ public class TSP
 		{
 				if (i == j)
 				{
-					adjMtx[i][i] = 0;
+					adjMtx[i][i] = 0; //a point has no distance to itself
 				}
 				else
 				{
 					distance = calcDistance(coords[i], coords[j]);
-					adjMtx[j][i] = distance;
+					adjMtx[j][i] = distance; //matrix is symmetric
 					adjMtx[i][j] = distance;
 				}
 			}
@@ -120,17 +120,21 @@ public class TSP
 
 		ThreadMXBean thx = ManagementFactory.getThreadMXBean();
 		long start = thx.getCurrentThreadCpuTime();
+		
 		if (args[0].equals("-e"))
 		{
 			int[] sequence = new int[count];
 			int temp[] = new int[count];
+			
 			enumerate(adjMtx, count, temp, sequence, new boolean[count], 0, 0,0);
-			minLength = 0;
+			
 			for (int i : sequence)
 			{
 				System.out.println("<" + coords[i][0] + "," + coords[i][1] + ">");
 			}
+			
 			double length = calcLength(sequence, adjMtx);
+			
 			System.out.println("<" + coords[0][0] + "," + coords[0][1] + ">");
 			System.out.println("Length: " + length);
 			System.out.println("-------");
@@ -140,10 +144,11 @@ public class TSP
 			int[][] solution = new int[count][count];
 			double bestRoute = -1;
 			int bestSolution = 0;
+			double length = 0;
 
-			for (int i = 0; i < count; i++)
+			for (int i = 0; i < count; i++) //Nearest Neighbour for every different starting point
 			{
-				solution[i] = neighbourSearch(adjMtx, count, i);
+				solution[i] = neighbourSearch(adjMtx, count, i); 
 			}
 
 			for (int i = 0; i < solution.length; i++)
@@ -152,15 +157,16 @@ public class TSP
 				{
 					System.out.println("<" + coords[j][0] + "," + coords[j][1] + ">");
 				}
-				double length = calcLength(solution[i], adjMtx);
+				
+				length = calcLength(solution[i], adjMtx);
+				
 				if (length < bestRoute || bestRoute == -1)
 				{
 					bestRoute = length;
 					bestSolution = i;
 				}
 
-				System.out.println("<" + coords[solution[i][0]][0] + ","
-						+ coords[solution[i][0]][1] + ">");
+				System.out.println("<" + coords[solution[i][0]][0] + "," + coords[solution[i][0]][1] + ">");
 				System.out.println("Length: " + length);
 				System.out.println("-------");
 			}
@@ -181,7 +187,9 @@ public class TSP
 			System.err.println("Algorithm not supported");
 			return;
 		}
+		
 		double end = (thx.getCurrentThreadCpuTime() - start) / 1E9;
+		
 		System.out.println("Algorithm execution time: " + end + " seconds");
 
 	}
@@ -193,11 +201,11 @@ public class TSP
 		return Math.sqrt(x * x + y * y);
 	}
 
-	void enumerate(double adjMtx[][], int count, int curtour[], int mintour[], boolean visited[], double sum, int start, int step)
-	{
+	void enumerate(double adjMtx[][], int count, int curtour[], int mintour[], boolean visited[], double sum, int start, int step) 
+	{									//Attention: arrays are called by reference in java, so mintour is our return value
 		curtour[step] = start;
 		
-		if (step == count - 1)
+		if (step == count - 1) //the last path is back to the starting point
 		{
 			sum += adjMtx[start][0];
 //			System.out.println(sum);
@@ -209,7 +217,7 @@ public class TSP
 			if (minLength == 0 || sum < minLength)
 			{
 				minLength = sum;
-				System.arraycopy(curtour, 0, mintour, 0, count);
+				System.arraycopy(curtour, 0, mintour, 0, count); //mintour is updated to the latest shortest path
 				// for(int i : curtour)
 				// {
 				// System.out.print(i);
@@ -226,11 +234,11 @@ public class TSP
 				sum += adjMtx[start][i];
 				step++;
 				// System.out.println(i);
-				enumerate(adjMtx, count, curtour, mintour, visited, sum, i,
-						step);
-				visited[i] = false;
+				enumerate(adjMtx, count, curtour, mintour, visited, sum, i, step);
+				
 				step--;
 				sum -= adjMtx[start][i];
+				visited[i] = false;
 			}
 		}
 	}
@@ -250,7 +258,8 @@ public class TSP
 		return sum;
 	}
 
-	int[] neighbourSearch(double adjMtx[][], int count, int startIndex) {
+	int[] neighbourSearch(double adjMtx[][], int count, int startIndex)
+	{
 		int[] res = new int[count];
 		int curElement = startIndex;
 		int tmpElement = 0;
@@ -259,25 +268,31 @@ public class TSP
 		int i = 0;
 		boolean visited[] = new boolean[count];
 
-		for (i = 0; i < count; i++) {
-			res[i] = -1337;
+		for (i = 0; i < count; i++)
+		{
+			res[i] = -1337; //this is just an index that does not exist (not like 0 for instance). We could have picked -1 too...
 			visited[i] = false;
 		}
 
-		for (i = 0; i < count; i++) {
+		for (i = 0; i < count; i++)
+		{
 			res[i] = curElement;
 			visited[curElement] = true;
 			minCost = -1;
 
-			for (nextElement = 0; nextElement < count; nextElement++) {
-				if (!visited[nextElement]) {
-					if (minCost < 0) {
+			for (nextElement = 0; nextElement < count; nextElement++)
+			{
+				if (!visited[nextElement]) //only looks at unvisited points
+				{
+					if (minCost < 0) //and takes the one with the lowest cost (=distance)
+					{
 						minCost = adjMtx[curElement][nextElement];
 						tmpElement = nextElement;
 						continue;
 					}
 
-					if (minCost > adjMtx[curElement][nextElement]) {
+					if (minCost > adjMtx[curElement][nextElement])
+					{
 						minCost = adjMtx[curElement][nextElement];
 						tmpElement = nextElement;
 					}
